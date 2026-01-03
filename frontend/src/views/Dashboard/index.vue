@@ -2,6 +2,11 @@
   <div class="dashboard">
     <!-- 欢迎区域 -->
     <div class="welcome-section">
+      <div class="welcome-bg">
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+        <div class="bg-shape shape-3"></div>
+      </div>
       <div class="welcome-content">
         <h1 class="welcome-title">
           欢迎使用 TradingAgents-CN
@@ -12,23 +17,22 @@
         </p>
       </div>
       <div class="welcome-actions">
-        <el-button type="primary" size="large" @click="quickAnalysis">
+        <el-button type="primary" size="large" class="action-btn primary-btn" @click="quickAnalysis">
           <el-icon><TrendCharts /></el-icon>
           快速分析
         </el-button>
-        <el-button size="large" @click="goToScreening">
+        <el-button size="large" class="action-btn secondary-btn" @click="goToScreening">
           <el-icon><Search /></el-icon>
           股票筛选
         </el-button>
       </div>
     </div>
 
-
     <!-- 学习中心推荐卡片 -->
     <el-card class="learning-highlight-card">
       <div class="learning-highlight">
         <div class="learning-icon">
-          <el-icon size="48"><Reading /></el-icon>
+          <el-icon size="40"><Reading /></el-icon>
         </div>
         <div class="learning-content">
           <h2>📚 AI股票分析学习中心</h2>
@@ -54,11 +58,17 @@
     <!-- 主要功能区域 -->
     <el-row :gutter="24" class="main-content">
       <!-- 左侧：快速操作 -->
-      <el-col :span="16">
-        <el-card class="quick-actions-card" header="快速操作">
+      <el-col :xs="24" :sm="24" :md="16" :lg="16">
+        <el-card class="quick-actions-card">
+          <template #header>
+            <div class="card-header-title">
+              <span class="title-icon">⚡</span>
+              快速操作
+            </div>
+          </template>
           <div class="quick-actions">
             <div class="action-item" @click="goToSingleAnalysis">
-              <div class="action-icon">
+              <div class="action-icon gradient-blue">
                 <el-icon><Document /></el-icon>
               </div>
               <div class="action-content">
@@ -69,7 +79,7 @@
             </div>
 
             <div class="action-item" @click="goToBatchAnalysis">
-              <div class="action-icon">
+              <div class="action-icon gradient-purple">
                 <el-icon><Files /></el-icon>
               </div>
               <div class="action-content">
@@ -80,7 +90,7 @@
             </div>
 
             <div class="action-item" @click="goToScreening">
-              <div class="action-icon">
+              <div class="action-icon gradient-green">
                 <el-icon><Search /></el-icon>
               </div>
               <div class="action-content">
@@ -91,7 +101,7 @@
             </div>
 
             <div class="action-item" @click="goToQueue">
-              <div class="action-icon">
+              <div class="action-icon gradient-orange">
                 <el-icon><List /></el-icon>
               </div>
               <div class="action-content">
@@ -104,30 +114,40 @@
         </el-card>
 
         <!-- 最近分析 -->
-        <el-card class="recent-analyses-card" header="最近分析" style="margin-top: 24px;">
-          <el-table :data="recentAnalyses" style="width: 100%">
-            <el-table-column prop="stock_code" label="股票代码" width="120" />
+        <el-card class="recent-analyses-card" style="margin-top: 24px;">
+          <template #header>
+            <div class="card-header-title">
+              <span class="title-icon">📊</span>
+              最近分析
+            </div>
+          </template>
+          <el-table :data="recentAnalyses" style="width: 100%" class="custom-table">
+            <el-table-column prop="stock_code" label="股票代码" width="120">
+              <template #default="{ row }">
+                <span class="stock-code-cell">{{ row.stock_code }}</span>
+              </template>
+            </el-table-column>
             <el-table-column prop="stock_name" label="股票名称" width="150" />
             <el-table-column prop="status" label="状态" width="100">
               <template #default="{ row }">
-                <el-tag :type="getStatusType(row.status)">
+                <el-tag :type="getStatusType(row.status)" class="status-tag">
                   {{ getStatusText(row.status) }}
                 </el-tag>
               </template>
             </el-table-column>
             <el-table-column prop="start_time" label="创建时间" width="180">
               <template #default="{ row }">
-                {{ formatTime(row.start_time) }}
+                <span class="time-cell">{{ formatTime(row.start_time) }}</span>
               </template>
             </el-table-column>
             <el-table-column label="操作">
               <template #default="{ row }">
-                <el-button type="text" size="small" @click="viewAnalysis(row)">
+                <el-button type="primary" link size="small" @click="viewAnalysis(row)">
                   查看
                 </el-button>
                 <el-button
                   v-if="row.status === 'completed'"
-                  type="text"
+                  type="success" link
                   size="small"
                   @click="downloadReport(row)"
                 >
@@ -138,7 +158,7 @@
           </el-table>
 
           <div class="table-footer">
-            <el-button type="text" @click="goToHistory">
+            <el-button type="primary" link @click="goToHistory">
               查看全部历史 <el-icon><ArrowRight /></el-icon>
             </el-button>
           </div>
@@ -147,7 +167,10 @@
         <!-- 市场快讯 -->
         <el-card class="market-news-card" style="margin-top: 24px;">
           <template #header>
-            <span>市场快讯</span>
+            <div class="card-header-title">
+              <span class="title-icon">📰</span>
+              市场快讯
+            </div>
           </template>
           <div v-if="marketNews.length > 0" class="news-list">
             <div
@@ -156,8 +179,14 @@
               class="news-item"
               @click="openNewsUrl(news.url)"
             >
-              <div class="news-title">{{ news.title }}</div>
-              <div class="news-time">{{ formatTime(news.time) }}</div>
+              <div class="news-content">
+                <div class="news-title">{{ news.title }}</div>
+                <div class="news-meta">
+                  <span class="news-source" v-if="news.source">{{ news.source }}</span>
+                  <span class="news-time">{{ formatTime(news.time) }}</span>
+                </div>
+              </div>
+              <el-icon class="news-arrow"><ArrowRight /></el-icon>
             </div>
           </div>
           <div v-else class="empty-state">
@@ -168,13 +197,16 @@
       </el-col>
 
       <!-- 右侧：自选股和快讯 -->
-      <el-col :span="8">
+      <el-col :xs="24" :sm="24" :md="8" :lg="8">
         <!-- 我的自选股 -->
         <el-card class="favorites-card">
           <template #header>
             <div class="card-header">
-              <span>我的自选股</span>
-              <el-button type="text" size="small" @click="goToFavorites">
+              <div class="card-header-title">
+                <span class="title-icon">⭐</span>
+                我的自选股
+              </div>
+              <el-button type="primary" link size="small" @click="goToFavorites">
                 查看全部 <el-icon><ArrowRight /></el-icon>
               </el-button>
             </div>
@@ -212,7 +244,7 @@
           </div>
 
           <div v-if="favoriteStocks.length > 5" class="favorites-footer">
-            <el-button type="text" size="small" @click="goToFavorites">
+            <el-button type="primary" link size="small" @click="goToFavorites">
               查看全部 {{ favoriteStocks.length }} 只自选股
             </el-button>
           </div>
@@ -222,8 +254,11 @@
         <el-card class="paper-trading-card" style="margin-top: 24px;">
           <template #header>
             <div class="card-header">
-              <span>模拟交易账户</span>
-              <el-button type="text" size="small" @click="goToPaperTrading">
+              <div class="card-header-title">
+                <span class="title-icon">💰</span>
+                模拟交易账户
+              </div>
+              <el-button type="primary" link size="small" @click="goToPaperTrading">
                 查看详情 <el-icon><ArrowRight /></el-icon>
               </el-button>
             </div>
@@ -393,7 +428,7 @@ const viewAnalysis = (analysis: AnalysisTask) => {
   if (status === 'completed') {
     router.push({ name: 'ReportDetail', params: { id: analysis.task_id } })
   } else {
-    // 未完成任务跳转到任务中心的“进行中”标签页
+    // 未完成任务跳转到任务中心的"进行中"标签页
     router.push('/tasks?tab=running')
   }
 }
@@ -418,7 +453,6 @@ const downloadReport = async (analysis: AnalysisTask) => {
     a.href = url
     const code = (analysis as any).stock_code || (analysis as any).stock_symbol || 'stock'
     const dateStr = (analysis as any).analysis_date || (analysis as any).start_time || ''
-    // 🔥 统一文件名格式：{code}_分析报告_{date}.md
     a.download = `${code}_分析报告_${String(dateStr).slice(0,10)}.md`
     document.body.appendChild(a)
     a.click()
@@ -475,7 +509,6 @@ const goToFavorites = () => {
 }
 
 const viewStockDetail = (stock: any) => {
-  // 可以跳转到股票详情页或分析页
   router.push(`/analysis/single?stock_code=${stock.stock_code}`)
 }
 
@@ -503,15 +536,12 @@ const loadFavoriteStocks = async () => {
 
 const loadRecentAnalyses = async () => {
   try {
-    // 使用任务中心的用户任务接口，获取最近10条
     const res = await analysisApi.getTaskList({
       limit: 10,
       offset: 0,
-      // 不限定状态，展示最近任务；如需仅展示已完成可设为 'completed'
       status: undefined
     })
 
-    // 兼容不同返回结构（ApiResponse 或直接 data）
     const body: any = (res as any)?.data?.data || (res as any)?.data || res || {}
     const tasks = body.tasks || []
 
@@ -526,13 +556,11 @@ const loadRecentAnalyses = async () => {
 
 const loadMarketNews = async () => {
   try {
-    // 先尝试获取最近 24 小时的新闻
     let response = await newsApi.getLatestNews(undefined, 10, 24)
 
-    // 如果最近 24 小时没有新闻，则获取最新的 10 条（不限时间）
     if (response.success && response.data && response.data.news.length === 0) {
       console.log('最近 24 小时没有新闻，获取最新的 10 条新闻（不限时间）')
-      response = await newsApi.getLatestNews(undefined, 10, 24 * 365) // 回溯 1 年
+      response = await newsApi.getLatestNews(undefined, 10, 24 * 365)
     }
 
     if (response.success && response.data) {
@@ -546,7 +574,6 @@ const loadMarketNews = async () => {
     }
   } catch (error) {
     console.error('加载市场快讯失败:', error)
-    // 如果加载失败，显示提示信息
     marketNews.value = []
   }
 }
@@ -586,13 +613,11 @@ const syncMarketNews = async () => {
     syncingNews.value = true
     ElMessage.info('正在同步市场新闻，请稍候...')
 
-    // 调用同步API（后台任务）
     const response = await newsApi.syncMarketNews(24, 50)
 
     if (response.success) {
       ElMessage.success('新闻同步任务已启动，请稍后刷新查看')
 
-      // 等待3秒后自动刷新新闻列表
       setTimeout(async () => {
         await loadMarketNews()
         if (marketNews.value.length > 0) {
@@ -610,64 +635,158 @@ const syncMarketNews = async () => {
 
 // 生命周期
 onMounted(async () => {
-  // 加载自选股数据
   await loadFavoriteStocks()
-  // 加载最近分析
   await loadRecentAnalyses()
-  // 加载市场快讯
   await loadMarketNews()
-  // 加载模拟交易账户
   await loadPaperAccount()
 })
 </script>
 
 <style lang="scss" scoped>
 .dashboard {
+  // 欢迎区域
   .welcome-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px;
-    padding: 40px;
+    position: relative;
+    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #EC4899 100%);
+    border-radius: 20px;
+    padding: 48px 40px;
     color: white;
     margin-bottom: 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(79, 70, 229, 0.3);
+
+    .welcome-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+
+      .bg-shape {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        animation: float 20s ease-in-out infinite;
+
+        &.shape-1 {
+          width: 300px;
+          height: 300px;
+          top: -100px;
+          right: -50px;
+          animation-delay: 0s;
+        }
+
+        &.shape-2 {
+          width: 200px;
+          height: 200px;
+          bottom: -80px;
+          left: 20%;
+          animation-delay: -5s;
+        }
+
+        &.shape-3 {
+          width: 150px;
+          height: 150px;
+          top: 50%;
+          right: 30%;
+          animation-delay: -10s;
+        }
+      }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(20px, -20px) scale(1.05); }
+      50% { transform: translate(-10px, 10px) scale(0.95); }
+      75% { transform: translate(-20px, -10px) scale(1.02); }
+    }
 
     .welcome-content {
+      position: relative;
+      z-index: 1;
+
       .welcome-title {
-        font-size: 32px;
-        font-weight: 600;
-        margin: 0 0 12px 0;
+        font-size: 36px;
+        font-weight: 700;
+        margin: 0 0 16px 0;
         display: flex;
         align-items: center;
         gap: 16px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 
         .version-badge {
           background: rgba(255, 255, 255, 0.2);
-          padding: 4px 12px;
+          backdrop-filter: blur(10px);
+          padding: 6px 16px;
           border-radius: 20px;
           font-size: 14px;
-          font-weight: 400;
+          font-weight: 500;
+          border: 1px solid rgba(255, 255, 255, 0.3);
         }
       }
 
       .welcome-subtitle {
-        font-size: 16px;
+        font-size: 18px;
         opacity: 0.9;
         margin: 0;
+        max-width: 500px;
+        line-height: 1.6;
       }
     }
 
     .welcome-actions {
+      position: relative;
+      z-index: 1;
       display: flex;
       gap: 16px;
+
+      .action-btn {
+        height: 48px;
+        padding: 0 28px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+
+        &.primary-btn {
+          background: white !important;
+          color: #4F46E5 !important;
+          border: none !important;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3) !important;
+          }
+        }
+
+        &.secondary-btn {
+          background: rgba(255, 255, 255, 0.15) !important;
+          color: white !important;
+          border: 1px solid rgba(255, 255, 255, 0.3) !important;
+          backdrop-filter: blur(10px);
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.25) !important;
+            transform: translateY(-2px);
+          }
+        }
+      }
     }
   }
 
+  // 学习中心卡片
   .learning-highlight-card {
     margin-bottom: 24px;
-    border: 2px solid var(--el-color-primary);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    border: 2px solid transparent;
+    background: linear-gradient(var(--el-bg-color), var(--el-bg-color)) padding-box,
+                linear-gradient(135deg, #4F46E5, #7C3AED, #EC4899) border-box;
+    border-radius: 16px !important;
+
+    &:hover {
+      transform: none;
+    }
 
     .learning-highlight {
       display: flex;
@@ -679,12 +798,13 @@ onMounted(async () => {
         flex-shrink: 0;
         width: 80px;
         height: 80px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
+        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
       }
 
       .learning-content {
@@ -692,7 +812,7 @@ onMounted(async () => {
 
         h2 {
           font-size: 20px;
-          font-weight: 600;
+          font-weight: 700;
           margin: 0 0 12px 0;
           color: var(--el-text-color-primary);
         }
@@ -710,12 +830,18 @@ onMounted(async () => {
           gap: 8px;
 
           .feature-tag {
-            padding: 4px 12px;
-            background: var(--el-color-primary-light-9);
-            color: var(--el-color-primary);
-            border-radius: 16px;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.1));
+            color: #4F46E5;
+            border-radius: 20px;
             font-size: 13px;
             font-weight: 500;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(124, 58, 237, 0.2));
+              transform: translateY(-1px);
+            }
           }
         }
       }
@@ -726,7 +852,26 @@ onMounted(async () => {
     }
   }
 
+  // 卡片标题样式
+  .card-header-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+
+    .title-icon {
+      font-size: 18px;
+    }
+  }
+
+  // 快速操作卡片
   .quick-actions-card {
+    &:hover {
+      transform: none;
+    }
+
     .quick-actions {
       display: grid;
       gap: 16px;
@@ -737,25 +882,52 @@ onMounted(async () => {
         gap: 16px;
         padding: 20px;
         border: 1px solid var(--el-border-color-lighter);
-        border-radius: 8px;
+        border-radius: 12px;
         cursor: pointer;
         transition: all 0.3s ease;
+        background: var(--el-bg-color);
 
         &:hover {
           border-color: var(--el-color-primary);
-          background-color: var(--el-color-primary-light-9);
+          background: linear-gradient(to right, rgba(79, 70, 229, 0.05), transparent);
+          transform: translateX(4px);
+
+          .action-arrow {
+            transform: translateX(4px);
+            color: var(--el-color-primary);
+          }
         }
 
         .action-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 8px;
-          background: var(--el-color-primary-light-8);
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: var(--el-color-primary);
-          font-size: 20px;
+          color: white;
+          font-size: 22px;
+          flex-shrink: 0;
+
+          &.gradient-blue {
+            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+          }
+
+          &.gradient-purple {
+            background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+          }
+
+          &.gradient-green {
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+          }
+
+          &.gradient-orange {
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+          }
         }
 
         .action-content {
@@ -771,105 +943,123 @@ onMounted(async () => {
           p {
             margin: 0;
             font-size: 14px;
-            color: var(--el-text-color-regular);
+            color: var(--el-text-color-secondary);
           }
         }
 
         .action-arrow {
           color: var(--el-text-color-placeholder);
-          transition: transform 0.3s ease;
-        }
-
-        &:hover .action-arrow {
-          transform: translateX(4px);
+          transition: all 0.3s ease;
+          font-size: 16px;
         }
       }
     }
   }
 
+  // 最近分析卡片
   .recent-analyses-card {
+    &:hover {
+      transform: none;
+    }
+
+    .custom-table {
+      .stock-code-cell {
+        font-weight: 600;
+        color: var(--el-color-primary);
+      }
+
+      .time-cell {
+        color: var(--el-text-color-secondary);
+        font-size: 13px;
+      }
+
+      .status-tag {
+        font-weight: 500;
+      }
+    }
+
     .table-footer {
       text-align: center;
       margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--el-border-color-lighter);
     }
   }
 
-  .system-status-card {
-    .status-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-
-      &:not(:last-child) {
-        border-bottom: 1px solid var(--el-border-color-lighter);
-      }
-
-      .status-label {
-        color: var(--el-text-color-regular);
-      }
-
-      .status-value {
-        font-weight: 600;
-        color: var(--el-text-color-primary);
-      }
-    }
-  }
-
+  // 市场快讯卡片
   .market-news-card {
+    &:hover {
+      transform: none;
+    }
+
     .news-list {
       .news-item {
-        padding: 12px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 0;
         cursor: pointer;
         border-bottom: 1px solid var(--el-border-color-lighter);
+        transition: all 0.2s ease;
 
         &:last-child {
           border-bottom: none;
         }
 
         &:hover {
-          background-color: var(--el-fill-color-lighter);
-          margin: 0 -16px;
-          padding: 12px 16px;
-          border-radius: 4px;
+          background: linear-gradient(to right, rgba(79, 70, 229, 0.05), transparent);
+          margin: 0 -20px;
+          padding: 14px 20px;
+          border-radius: 8px;
+
+          .news-arrow {
+            opacity: 1;
+            transform: translateX(0);
+          }
         }
 
-        .news-title {
-          font-size: 14px;
-          color: var(--el-text-color-primary);
-          margin-bottom: 4px;
-          line-height: 1.4;
+        .news-content {
+          flex: 1;
+
+          .news-title {
+            font-size: 14px;
+            color: var(--el-text-color-primary);
+            margin-bottom: 6px;
+            line-height: 1.5;
+            font-weight: 500;
+          }
+
+          .news-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--el-text-color-placeholder);
+
+            .news-source {
+              padding: 2px 8px;
+              background: var(--el-fill-color-light);
+              border-radius: 4px;
+            }
+          }
         }
 
-        .news-time {
-          font-size: 12px;
+        .news-arrow {
           color: var(--el-text-color-placeholder);
+          opacity: 0;
+          transform: translateX(-10px);
+          transition: all 0.2s ease;
         }
       }
     }
-
-    .news-footer {
-      text-align: center;
-      margin-top: 16px;
-    }
   }
 
-  .tips-card {
-    .tip-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 0;
-      font-size: 14px;
-      color: var(--el-text-color-regular);
-
-      .tip-icon {
-        color: var(--el-color-primary);
-      }
-    }
-  }
-
+  // 自选股卡片
   .favorites-card {
+    &:hover {
+      transform: none;
+    }
+
     .card-header {
       display: flex;
       justify-content: space-between;
@@ -886,16 +1076,16 @@ onMounted(async () => {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 12px 0;
+        padding: 14px 0;
         border-bottom: 1px solid var(--el-border-color-lighter);
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: all 0.2s ease;
 
         &:hover {
-          background-color: var(--el-fill-color-lighter);
-          margin: 0 -16px;
-          padding: 12px 16px;
-          border-radius: 6px;
+          background: linear-gradient(to right, rgba(79, 70, 229, 0.05), transparent);
+          margin: 0 -20px;
+          padding: 14px 20px;
+          border-radius: 8px;
         }
 
         &:last-child {
@@ -906,13 +1096,13 @@ onMounted(async () => {
           .stock-code {
             font-weight: 600;
             font-size: 14px;
-            color: var(--el-text-color-primary);
+            color: var(--el-color-primary);
           }
 
           .stock-name {
             font-size: 12px;
-            color: var(--el-text-color-regular);
-            margin-top: 2px;
+            color: var(--el-text-color-secondary);
+            margin-top: 4px;
           }
         }
 
@@ -921,24 +1111,25 @@ onMounted(async () => {
 
           .current-price {
             font-weight: 600;
-            font-size: 14px;
+            font-size: 15px;
             color: var(--el-text-color-primary);
           }
 
           .change-percent {
-            font-size: 12px;
-            margin-top: 2px;
+            font-size: 13px;
+            margin-top: 4px;
+            font-weight: 500;
 
             &.price-up {
-              color: #f56c6c;
+              color: #EF4444;
             }
 
             &.price-down {
-              color: #67c23a;
+              color: #10B981;
             }
 
             &.price-neutral {
-              color: var(--el-text-color-regular);
+              color: var(--el-text-color-secondary);
             }
           }
         }
@@ -953,7 +1144,12 @@ onMounted(async () => {
     }
   }
 
+  // 模拟交易卡片
   .paper-trading-card {
+    &:hover {
+      transform: none;
+    }
+
     .card-header {
       display: flex;
       justify-content: space-between;
@@ -967,16 +1163,16 @@ onMounted(async () => {
 
       .account-section {
         border: 1px solid var(--el-border-color-lighter);
-        border-radius: 8px;
-        padding: 12px;
-        background-color: var(--el-fill-color-blank);
+        border-radius: 12px;
+        padding: 16px;
+        background: linear-gradient(to right, var(--el-fill-color-lighter), transparent);
 
         .account-section-title {
           font-size: 14px;
           font-weight: 600;
           color: var(--el-text-color-primary);
           margin-bottom: 12px;
-          padding-bottom: 8px;
+          padding-bottom: 10px;
           border-bottom: 1px solid var(--el-border-color-lighter);
         }
       }
@@ -989,7 +1185,7 @@ onMounted(async () => {
 
         .account-label {
           font-size: 13px;
-          color: var(--el-text-color-regular);
+          color: var(--el-text-color-secondary);
         }
 
         .account-value {
@@ -999,19 +1195,15 @@ onMounted(async () => {
 
           &.primary {
             color: var(--el-color-primary);
-            font-size: 16px;
+            font-size: 17px;
           }
 
           &.price-up {
-            color: #f56c6c;
+            color: #EF4444;
           }
 
           &.price-down {
-            color: #67c23a;
-          }
-
-          &.price-neutral {
-            color: var(--el-text-color-regular);
+            color: #10B981;
           }
         }
       }
@@ -1019,7 +1211,7 @@ onMounted(async () => {
 
     .empty-state {
       text-align: center;
-      padding: 20px 0;
+      padding: 24px 0;
 
       .empty-icon {
         font-size: 48px;
@@ -1042,9 +1234,23 @@ onMounted(async () => {
       flex-direction: column;
       text-align: center;
       gap: 24px;
+      padding: 32px 24px;
+
+      .welcome-content {
+        .welcome-title {
+          font-size: 24px;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .welcome-subtitle {
+          font-size: 14px;
+        }
+      }
 
       .welcome-actions {
         justify-content: center;
+        flex-wrap: wrap;
       }
     }
 
@@ -1064,6 +1270,36 @@ onMounted(async () => {
     .main-content {
       .el-col {
         margin-bottom: 24px;
+      }
+    }
+  }
+}
+
+// 暗色主题适配
+html.dark {
+  .dashboard {
+    .welcome-section {
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .learning-highlight-card {
+      .learning-highlight {
+        .learning-content {
+          .learning-features {
+            .feature-tag {
+              background: linear-gradient(135deg, rgba(129, 140, 248, 0.15), rgba(167, 139, 250, 0.15));
+              color: #A5B4FC;
+            }
+          }
+        }
+      }
+    }
+
+    .quick-actions-card {
+      .action-item {
+        &:hover {
+          background: linear-gradient(to right, rgba(129, 140, 248, 0.1), transparent);
+        }
       }
     }
   }
