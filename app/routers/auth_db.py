@@ -113,6 +113,54 @@ async def get_current_user(authorization: Optional[str] = Header(default=None)) 
         "preferences": user.preferences.model_dump() if user.preferences else {}
     }
 
+class RegisterRequest(BaseModel):
+    username: str
+    email: str
+    password: str
+
+@router.post("/register")
+async def register(payload: RegisterRequest, request: Request):
+    """用户注册"""
+    try:
+        # 验证输入
+        if not payload.username or not payload.email or not payload.password:
+            raise HTTPException(status_code=400, detail="用户名、邮箱和密码不能为空")
+        
+        if len(payload.username) < 3 or len(payload.username) > 20:
+            raise HTTPException(status_code=400, detail="用户名长度必须在3-20个字符之间")
+        
+        if len(payload.password) < 6:
+            raise HTTPException(status_code=400, detail="密码长度不能少于6位")
+        
+        # 创建用户
+        user_create = UserCreate(
+            username=payload.username,
+            email=payload.email,
+            password=payload.password
+        )
+        
+        new_user = await user_service.create_user(user_create)
+        
+        if not new_user:
+            raise HTTPException(status_code=400, detail="用户名或邮箱已存在")
+        
+        logger.info(f"✅ 用户注册成功: {payload.username}")
+        
+        return {
+            "success": True,
+            "data": {
+                "id": str(new_user.id),
+                "username": new_user.username,
+                "email": new_user.email
+            },
+            "message": "注册成功"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"注册失败: {e}")
+        raise HTTPException(status_code=500, detail=f"注册失败: {str(e)}")
+
 @router.post("/login")
 async def login(payload: LoginRequest, request: Request):
     """用户登录"""

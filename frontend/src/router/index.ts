@@ -349,6 +349,17 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/Auth/Register.vue'),
+    meta: {
+      title: '注册',
+      hideInMenu: true,
+      transition: 'fade'
+    }
+  },
+
+  {
     path: '/about',
     name: 'About',
     component: () => import('@/views/About/index.vue'),
